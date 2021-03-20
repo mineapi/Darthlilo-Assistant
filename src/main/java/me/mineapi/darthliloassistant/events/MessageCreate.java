@@ -41,7 +41,6 @@ public class MessageCreate extends ListenerAdapter {
         commands.add(new ticket());
         commands.add(new close());
         commands.add(new info());
-        commands.add(new eval());
         commands.add(new killswitch());
     }
 }
