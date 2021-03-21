@@ -13,6 +13,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ticket extends DiscordCommand {
+    public ticket() {
+        super(PermissionType.MEMBER);
+    }
+
     @Override
     public String name() {
         return "ticket";
@@ -28,7 +32,7 @@ public class ticket extends DiscordCommand {
     public static String memberTag;
     public static int id;
     @Override
-    public void perform(Message message) {
+    public void perform(Message message, String[] args) {
         id = generateID(100);
         EventWaiter waiter = DarthliloAssistant.getWaiter();
         User author = message.getAuthor();
@@ -37,7 +41,7 @@ public class ticket extends DiscordCommand {
 
         if (message.getChannel().equals(message.getGuild().getTextChannelById(botChannel))) {
             TextChannel ticketChannel = message.getGuild().createTextChannel("Ticket-"+id).complete();
-            ticketChannel.createPermissionOverride(message.getMember()).setAllow(Permission.VIEW_CHANNEL, Permission.MESSAGE_WRITE).complete();
+            ticketChannel.createPermissionOverride(message.getMember()).setAllow(Permission.VIEW_CHANNEL, Permission.MESSAGE_WRITE, Permission.MESSAGE_HISTORY).complete();
             ticketChannel.createPermissionOverride(message.getGuild().getPublicRole()).setDeny(Permission.ALL_PERMISSIONS).complete();
 
             message.getChannel().sendMessage("You've opened a ticket, you were mentioned in the channel.").queue();

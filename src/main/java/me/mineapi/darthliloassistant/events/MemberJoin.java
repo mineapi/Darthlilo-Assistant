@@ -11,15 +11,15 @@ import org.jetbrains.annotations.NotNull;
 public class MemberJoin extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
+        event.getGuild().retrieveMember(event.getUser());
         Dotenv dotenv = Dotenv.load();
         Guild guild = event.getGuild();
         Long welcomeChannelID = Long.valueOf(dotenv.get("WELCOME_CHANNEL"));
         Long gifChannelID = Long.valueOf(dotenv.get("GIF_CHANNEL"));
         MessageChannel welcomeChannel = guild.getTextChannelById(welcomeChannelID);
         MessageChannel gifChannel = guild.getTextChannelById(gifChannelID);
-        User user = event.getUser();
 
-        welcomeChannel.sendMessage("**" + user.getAsTag() + "** just joined the server! :slight_smile:").queue();
-        gifChannel.sendMessage("Hello there " + user.getAsMention() + ", welcome to **" + guild.getName() + "** Take a gif present! https://i.imgur.com/aBPomxC.gif").queue();
+        welcomeChannel.sendMessage("**" + event.getMember().getAsMention() + "** just joined the server! :slight_smile:").queue();
+        gifChannel.sendMessage("Hello there " + event.getMember().getAsMention() + ", welcome to **" + guild.getName() + "** Take a gif present! https://i.imgur.com/aBPomxC.gif").queue();
     }
 }

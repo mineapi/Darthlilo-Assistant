@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class close extends DiscordCommand {
+    public close() {
+        super(PermissionType.ADMINISTRATOR);
+    }
+
     @Override
     public String name() {
         return "close";
@@ -32,10 +36,9 @@ public class close extends DiscordCommand {
     }
 
     @Override
-    public void perform(Message message) {
+    public void perform(Message message, String[] args) {
         final User user = message.getAuthor();
-        message.getGuild().retrieveMember(user).queue();
-        final Member member = message.getGuild().getMember(user);
+        final Member member = message.getMember();
         final MessageChannel channel = message.getChannel();
 
         if (member.hasPermission(Permission.MANAGE_CHANNEL)) {
@@ -46,19 +49,23 @@ public class close extends DiscordCommand {
             if (filteredName.equals("ticket")) {
                 EventWaiter waiter = DarthliloAssistant.getWaiter();
                 channel.sendMessage("Are you sure you want to delete this channel?").queue();
-                waiter.waitForEvent(MessageReceivedEvent.class, e -> e.getChannel().equals(channel) && e.getAuthor().equals(user) && e.getMessage().getContentRaw().equals("yes"), e -> {
-                    Dotenv dotenv = Dotenv.load();
-                    Long ticketChannelID = Long.valueOf(dotenv.get("TICKET_CHANNEL"));
-                    e.getGuild().getTextChannelById(channel.getId()).delete().queue();
+                waiter.waitForEvent(MessageReceivedEvent.class, e -> e.getChannel().equals(channel) && e.getAuthor().equals(user), e -> {
+                    if (e.getMessage().getContentRaw().equals("yes")) {
+                        Dotenv dotenv = Dotenv.load();
+                        Long ticketChannelID = Long.valueOf(dotenv.get("TICKET_CHANNEL"));
+                        e.getGuild().getTextChannelById(channel.getId()).delete().queue();
 
-                    EmbedBuilder embed = new EmbedBuilder()
-                            .setTitle("Ticket Closed")
-                            .addField("ID", message.getChannel().getName(), false)
-                            .addField("Closed by", message.getAuthor().getAsMention(), false)
-                            .setTimestamp(new Date().toInstant())
-                            .setColor(Color.PINK)
-                            .setFooter("Made by MineAPI", DarthliloAssistant.get().getSelfUser().getAvatarUrl());
-                    message.getGuild().getTextChannelById(ticketChannelID).sendMessage(embed.build()).queue();
+                        EmbedBuilder embed = new EmbedBuilder()
+                                .setTitle("Ticket Closed")
+                                .addField("ID", message.getChannel().getName(), false)
+                                .addField("Closed by", message.getAuthor().getAsMention(), false)
+                                .setTimestamp(new Date().toInstant())
+                                .setColor(Color.PINK)
+                                .setFooter("Made by MineAPI", DarthliloAssistant.get().getSelfUser().getAvatarUrl());
+                        message.getGuild().getTextChannelById(ticketChannelID).sendMessage(embed.build()).queue();
+                    } else if (e.getMessage().getContentRaw().equals("no")) {
+                        e.getChannel().sendMessage("This ticket will not be closed.").queue();
+                    }
                 }, 10, TimeUnit.MINUTES, () -> System.out.println("Waited too long"));
             } else {
                 channel.sendMessage("In order to protect the server, you may not delete this channel!");
